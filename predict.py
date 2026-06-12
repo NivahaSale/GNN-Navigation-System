@@ -2,14 +2,12 @@ import torch
 import networkx as nx
 import osmnx as ox
 
-from pyg_data import convert_to_pyg_data
+from graph import create_graph_with_traffic
 from subgraph import create_subgraph
+from pyg_data import convert_to_pyg_data
 from model import EdgeGNN
 
 
-# -----------------------------
-# LOAD MODEL
-# -----------------------------
 def load_model(data):
 
     model = EdgeGNN(
@@ -24,111 +22,57 @@ def load_model(data):
     return model
 
 
-# -----------------------------
-# RUN INFERENCE
-# -----------------------------
-def run_inference(model, data):
+def run(model, data):
 
     with torch.no_grad():
-        edge_predictions = model(
+        return model(
             data.x,
             data.edge_index,
             data.edge_attr
-        ).squeeze()
-
-    return edge_predictions.cpu().numpy()
+        ).squeeze().cpu().numpy()
 
 
-# -----------------------------
-# UPDATE GRAPH (FIXED PROPERLY)
-# -----------------------------
-def update_graph(G_sub, edge_predictions, data, nodes):
-
-    print("🧠 Updating edge weights...")
+def update_graph(G_sub, pred, data, nodes):
 
     edge_index = data.edge_index.t().cpu().numpy()
 
-    for i, (u_idx, v_idx) in enumerate(edge_index):
+    for i, (u_i, v_i) in enumerate(edge_index):
 
-        u = nodes[u_idx]
-        v = nodes[v_idx]
+        u = nodes[u_i]
+        v = nodes[v_i]
 
         if G_sub.has_edge(u, v):
 
-            edge_data = G_sub.edges[u, v]
+            d = G_sub.get_edge_data(u, v, default={})
+            length = d.get("length", 1.0)
 
-            G_sub.edges[u, v]["weight"] = (
-                edge_data.get("length", 1.0)
-                + float(edge_predictions[i])
-            )
+            G_sub[u][v]["weight"] = length + float(pred[i])
 
     return G_sub
 
 
-# -----------------------------
-# FIND ROUTE
-# -----------------------------
-def find_route(G_sub):
-
-    nodes = list(G_sub.nodes())
-
-    source = nodes[10]
-    destination = nodes[200]
-
-    try:
-        path = nx.shortest_path(
-            G_sub,
-            source,
-            destination,
-            weight="weight"
-        )
-
-        print("\n🚀 AI ROUTE FOUND")
-        print("Route length:", len(path))
-        print("First 10 nodes:", path[:10])
-
-        return path
-
-    except nx.NetworkXNoPath:
-        print("❌ No route found")
-        return None
-
-
-# -----------------------------
-# MAIN PIPELINE
-# -----------------------------
 def main():
 
-    print("📡 Loading graph...")
-
-    G = ox.graph_from_place(
-        "Hyderabad, Telangana, India",
-        network_type="drive"
-    )
-
-    # IMPORTANT: ensure simple graph (NOT MultiGraph issues)
+    G = ox.graph_from_place("Hyderabad, Telangana, India", network_type="drive")
     G = nx.Graph(G)
 
     G_sub = create_subgraph(G)
 
-    # IMPORTANT FIX: keep node order stable
-    nodes = list(G_sub.nodes())
+    data, nodes = convert_to_pyg_data(G_sub)
 
-    data = convert_to_pyg_data(G_sub)
-
-    print("🤖 Loading trained model...")
     model = load_model(data)
 
-    print("🔮 Running inference...")
-    edge_predictions = run_inference(model, data)
+    pred = run(model, data)
 
-    print("🧠 Updating edge weights...")
-    G_sub = update_graph(G_sub, edge_predictions, data, nodes)
+    G_sub = update_graph(G_sub, pred, data, nodes)
 
-    print("🧭 Computing best route...")
-    route = find_route(G_sub)
+    source = nodes[10]
+    target = nodes[200]
 
-    return route
+    path = nx.shortest_path(G_sub, source, target, weight="weight")
+
+    print("\n FINAL ROUTE")
+    print(path[:10])
 
 
 if __name__ == "__main__":

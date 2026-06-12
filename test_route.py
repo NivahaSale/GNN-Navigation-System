@@ -1,7 +1,6 @@
 import osmnx as ox
 import networkx as nx
 
-# MGIT -> Gachibowli area
 bbox = (
     78.3245,  # west
     17.3807,  # south
@@ -20,14 +19,12 @@ print("Graph loaded!")
 print("Nodes:", len(G.nodes))
 print("Edges:", len(G.edges))
 
-# Convert to undirected graph for learning/testing
 G = G.to_undirected()
 
 print("Converted to undirected graph.")
 
 nodes = list(G.nodes)
 
-# Pick two nodes guaranteed to exist
 source = nodes[10]
 destination = nodes[200]
 
@@ -42,11 +39,11 @@ try:
         weight="length"
     )
 
-    print("\n✅ Route Found")
+    print("\nRoute Found")
     print("Route contains", len(route), "nodes")
 
     print("\nFirst 10 nodes in route:")
     print(route[:10])
 
 except nx.NetworkXNoPath:
-    print("❌ No path found")
+    print("No path found")

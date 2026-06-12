@@ -4,37 +4,31 @@ from torch_geometric.nn import NNConv
 
 
 class EdgeGNN(nn.Module):
+
     def __init__(self, node_in, edge_in, hidden):
         super().__init__()
-
-        # -----------------------------
-        # EDGE NETWORK (CRITICAL FIX)
-        # MUST output node_in * hidden
-        # -----------------------------
         self.edge_mlp1 = nn.Sequential(
-            nn.Linear(edge_in, 128),
+            nn.Linear(edge_in, 64),
             nn.ReLU(),
-            nn.Linear(128, node_in * hidden)
+            nn.Linear(64, node_in * hidden)
         )
 
-        self.conv1 = NNConv(node_in, hidden, self.edge_mlp1, aggr='mean')
+        self.conv1 = NNConv(node_in, hidden, self.edge_mlp1)
 
-        # second layer
         self.edge_mlp2 = nn.Sequential(
-            nn.Linear(edge_in, 128),
+            nn.Linear(edge_in, 64),
             nn.ReLU(),
-            nn.Linear(128, hidden * hidden)
+            nn.Linear(64, hidden * hidden)
         )
 
-        self.conv2 = NNConv(hidden, hidden, self.edge_mlp2, aggr='mean')
+        self.conv2 = NNConv(hidden, hidden, self.edge_mlp2)
 
         self.relu = nn.ReLU()
-
-        # edge prediction head
-        self.edge_predictor = nn.Sequential(
+        self.edge_pred = nn.Sequential(
             nn.Linear(hidden * 2 + edge_in, 64),
             nn.ReLU(),
-            nn.Linear(64, 1)
+            nn.Linear(64, 1),
+            nn.Softplus()
         )
 
     def forward(self, x, edge_index, edge_attr):
@@ -50,4 +44,4 @@ class EdgeGNN(nn.Module):
             edge_attr
         ], dim=1)
 
-        return self.edge_predictor(edge_features)
+        return self.edge_pred(edge_features)

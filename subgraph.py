@@ -1,65 +1,31 @@
 import networkx as nx
 import random
 
+def create_subgraph(G, size=3000):
 
-def create_subgraph(G, start_node=None, size=3000):
-    """
-    Create CONNECTED subgraph (fixes routing failure)
-    """
+    print("Creating CONNECTED subgraph...")
 
-    try:
-        print("📍 Creating CONNECTED subgraph...")
+    start = random.choice(list(G.nodes))
 
-        nodes = list(G.nodes())
+    visited = set()
+    queue = [start]
 
-        # -----------------------------
-        # 1. Pick a random starting node
-        # -----------------------------
-        if start_node is None:
-            start_node = random.choice(nodes)
+    while queue and len(visited) < size:
 
-        # -----------------------------
-        # 2. BFS expansion (IMPORTANT FIX)
-        # -----------------------------
-        visited = set()
-        queue = [start_node]
+        node = queue.pop(0)
 
-        while queue and len(visited) < size:
+        if node in visited:
+            continue
 
-            node = queue.pop(0)
+        visited.add(node)
 
-            if node in visited:
-                continue
+        for nbr in G.neighbors(node):
+            if nbr not in visited:
+                queue.append(nbr)
 
-            visited.add(node)
+    G_sub = G.subgraph(visited).copy()
+    G_sub = nx.Graph(G_sub)
 
-            for neighbor in G.neighbors(node):
-                if neighbor not in visited:
-                    queue.append(neighbor)
+    print("Subgraph ready:", len(G_sub.nodes), "nodes")
 
-        # -----------------------------
-        # 3. Build connected subgraph
-        # -----------------------------
-        G_sub = G.subgraph(visited).copy()
-
-        print("✅ Connected subgraph created!")
-        print("Nodes:", len(G_sub.nodes))
-        print("Edges:", len(G_sub.edges))
-
-        return G_sub
-
-    except Exception as e:
-        print("❌ Subgraph creation failed:", e)
-        return None
-
-
-# TEST
-if __name__ == "__main__":
-    import osmnx as ox
-
-    G = ox.graph_from_place(
-        "Hyderabad, Telangana, India",
-        network_type="drive"
-    )
-
-    sub = create_subgraph(G)
+    return G_sub
