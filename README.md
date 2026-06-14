@@ -61,30 +61,6 @@ The model learns to predict:
 Predicted travel times are used as edge weights in:
 - Dijkstra’s shortest path algorithm
 
----
-
-##  Project Structure
-project/
-│
-├── src/
-│ ├── model.py
-│ ├── train.py
-│ ├── graph.py
-│ ├── route_engine.py
-│ ├── generate_dataset.py
-│ ├── download_graph.py
-│
-├── data/
-│ ├── hyderabad_west.graphml
-│ ├── traffic_dataset.csv
-│
-├── models/
-│ ├── gnn_model.pt
-│
-├── test_route.py
-├── README.md
-
----
 
 ##  Results
 
