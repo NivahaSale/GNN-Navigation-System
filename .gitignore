@@ -3,3 +3,10 @@ __pycache__/
 *.pyc
 gnn_model.pt
 explanation
+venv
+data
+models
+__pycache__
+cache
+backend
+*.log

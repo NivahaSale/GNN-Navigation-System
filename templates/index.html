@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GNN Navigation System</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>Revolutionizing Navigation System using Graph Neural Networks</h1>
+    </header>
+
+    <!-- Controls -->
+    <section class="inputs-container">
+
+        <input
+            type="text"
+            id="origin"
+            placeholder="Origin (lat, lon)"
+        >
+
+        <input
+            type="text"
+            id="destination"
+            placeholder="Destination (lat, lon)"
+        >
+
+        <select id="hour">
+            <option value="8">Morning Rush</option>
+            <option value="14">Afternoon</option>
+            <option value="18" selected>Evening Rush</option>
+            <option value="22">Night</option>
+        </select>
+
+        <select id="weather">
+            <option value="clear">Clear</option>
+            <option value="rain">Rain</option>
+            <option value="heavy_rain">Heavy Rain</option>
+        </select>
+
+        <select id="incident">
+            <option value="none">No Incident</option>
+            <option value="roadwork">Road Work</option>
+            <option value="accident">Accident</option>
+        </select>
+
+        <button id="route-btn">
+            Find Route
+        </button>
+
+    </section>
+
+    <!-- Map -->
+    <main>
+
+        <div id="map-container">
+
+            <div id="map"></div>
+
+            <aside id="route-details">
+
+                <h2>Route Details</h2>
+
+                <p>
+                    <strong>Distance:</strong>
+                    <span id="distance">--</span> km
+                </p>
+
+                <p>
+                    <strong>Time:</strong>
+                    <span id="time">--</span> min
+                </p>
+
+                <button onclick="resetMap()">
+                    Reset
+                </button>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 Nivaha - GNN Navigation System</p>
+    </footer>
+
+    <!-- IMPORTANT: JS must be loaded here -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>
